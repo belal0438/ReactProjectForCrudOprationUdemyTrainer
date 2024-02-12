@@ -13,19 +13,21 @@ function App() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch("https://swapi.dev/api/films/");
+      const response = await fetch(
+        "https://crudcrud.com/api/278337fa3a2a4a058f3c0d1e97ede6d8/moviesData"
+      );
       if (!response.ok) {
         throw new Error("Something went wrong!");
       }
 
       const data = await response.json();
 
-      const transformedMovies = data.results.map((movieData) => {
+      const transformedMovies = data.map((movieData) => {
         return {
-          id: movieData.episode_id,
+          id: movieData._id,
           title: movieData.title,
-          openingText: movieData.opening_crawl,
-          releaseDate: movieData.release_date,
+          openingText: movieData.openingText,
+          releaseDate: movieData.releaseDate,
         };
       });
       setMovies(transformedMovies);
@@ -39,14 +41,56 @@ function App() {
     fetchMoviesHandler();
   }, [fetchMoviesHandler]);
 
-  function addMovieHandler(movie) {
-    console.log("moviv", movie);
-  }
+  const addMovieHandler = async (movie) => {
+    try {
+      const response = await fetch(
+        "https://crudcrud.com/api/278337fa3a2a4a058f3c0d1e97ede6d8/moviesData",
+        {
+          method: "POST",
+          body: JSON.stringify(movie),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Something went wrong while sending data!");
+      }
+      const data = await response.json();
+      console.log("data Added", data);
+      fetchMoviesHandler();
+    } catch (error) {
+      console.log("Error while sending data", error);
+    }
+  };
+
+  const deleteMovieHandler = async (id) => {
+    try {
+      const response = await fetch(
+        `https://crudcrud.com/api/278337fa3a2a4a058f3c0d1e97ede6d8/moviesData/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      console.log(`Movie with _id ${id} deleted successfully.`);
+      fetchMoviesHandler();
+    } catch (error) {
+      console.error("Error deleting data:", error);
+    }
+  };
 
   let content = <p>Found no movies.</p>;
 
   if (movies.length > 0) {
-    content = <MoviesList movies={movies} />;
+    content = <MoviesList movies={movies} deletMovei={deleteMovieHandler} />;
   }
 
   if (error) {
